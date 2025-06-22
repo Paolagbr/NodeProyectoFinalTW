@@ -1,0 +1,11 @@
+# Firebase credentials
+firebase-service-account.json
+.env
+
+# Dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

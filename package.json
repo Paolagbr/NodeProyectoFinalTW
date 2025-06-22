@@ -1,8 +1,13 @@
 {
   "dependencies": {
+    "@angular/cdk": "^19.2.14",
+    "@angular/material": "^19.2.14",
+    "@types/qrcode": "^1.5.5",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "nodemailer": "^7.0.3"
+    "ngx-spinner": "^19.0.0",
+    "nodemailer": "^7.0.3",
+    "qrcode": "^1.5.4"
   }
 }
