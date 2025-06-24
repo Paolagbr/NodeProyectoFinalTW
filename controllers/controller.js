@@ -7,8 +7,8 @@ const enviarCita = async (req, res) => {
     host: 'smtp.gmail.com',
     port: 587,
     auth: {
-      user: 'ginaproyecto4@gmail.com',
-      pass: 'nkvh rkhj qedm gbql'
+      user: process.env.CORREO_USER,
+     pass: process.env.CORREO_PASS
     }
   };
 

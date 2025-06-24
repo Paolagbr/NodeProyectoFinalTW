@@ -8,10 +8,18 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json()); // Aunque express.json() ya cubre esto, se deja por compatibilidad si usas rutas externas con body-parser
+app.use(bodyParser.json()); 
+
 
 // Firebase Admin Init
-const serviceAccount = require("./firebase-service-account.json");
+// const serviceAccount = {
+//   type: "service_account",
+//   project_id: process.env.FIREBASE_PROJECT_ID,
+//   private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+//   client_email: process.env.FIREBASE_CLIENT_EMAIL,
+// };
+
+const serviceAccount = require('./firebase-service-account.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -122,26 +130,7 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-// enviarMail =async ()=>{
-//     const config ={
-//         host:'smtp.gmail.com',
-//         port:587,
-//         auth:{
-//             user:'ginaproyecto4@gmail.com',
-//             pass: 'nkvh rkhj qedm gbql'
-//         }
-//     }
-//     const mensaje={
-//         form: 'ginaproyecto4@gmail.com',
-//         to:'ginaproyecto4@gmail.com',
-//         subject: 'Correo de pruebas',
-//         text: 'Envio de correo desde node js utilizando nodemailer'
-//     }
-//      const trasnport=nodemailer.createTransport(config);
-//      const info = await trasnport.sendMail(mensaje);
-//      console.log(info);
-// }
-// enviarMail();
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
