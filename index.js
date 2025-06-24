@@ -1,25 +1,28 @@
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
-require("dotenv").config();
+
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json()); 
 
-
-// Firebase Admin Init
-// const serviceAccount = {
-//   type: "service_account",
-//   project_id: process.env.FIREBASE_PROJECT_ID,
-//   private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-//   client_email: process.env.FIREBASE_CLIENT_EMAIL,
-// };
-
-const serviceAccount = require('./firebase-service-account.json');
+const serviceAccount = {
+  type: "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: "https://accounts.google.com/o/oauth2/auth",
+  token_uri: "https://oauth2.googleapis.com/token",
+  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+  client_x509_cert_url: process.env.FIREBASE_CERT_URL,
+  universe_domain: "googleapis.com"
+};
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -27,16 +30,13 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// Importar rutas externas (como enviar correo)
 const correoRoutes = require('./routes/rutas');
 app.use('/api', correoRoutes);
 
-// Endpoint para obtener datos de cita para QR
 app.get("/api/cita-qr/:email", async (req, res) => {
   try {
     const { email } = req.params;
 
-    // Buscar la cita más reciente del usuario
     const citasRef = db.collection("citas");
     const snapshot = await citasRef.where("email", "==", email).orderBy("fechaCreacion", "desc").limit(1).get();
 
@@ -49,11 +49,9 @@ app.get("/api/cita-qr/:email", async (req, res) => {
     const citaData = snapshot.docs[0].data();
     const citaId = snapshot.docs[0].id;
 
-    // Generar código dinámico (cambia cada vez)
     const timestamp = Date.now();
     const codigoDinamico = `SPA-${citaId.substring(0, 8)}-${timestamp}`;
 
-    // Datos para el QR (información de la cita)
     const qrData = {
       codigoConfirmacion: codigoDinamico,
       citaId: citaId,
@@ -64,10 +62,9 @@ app.get("/api/cita-qr/:email", async (req, res) => {
       hora: citaData.hora || "10:00",
       estado: citaData.estado || "confirmada",
       generadoEn: new Date().toISOString(),
-      validoHasta: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
+      validoHasta: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
 
-    // Actualizar la cita con el nuevo código
     await db.collection("citas").doc(citaId).update({
       ultimoCodigoQR: codigoDinamico,
       ultimaGeneracionQR: admin.firestore.FieldValue.serverTimestamp(),
@@ -86,7 +83,6 @@ app.get("/api/cita-qr/:email", async (req, res) => {
   }
 });
 
-// Endpoint para verificar QR
 app.post("/api/verificar-qr", async (req, res) => {
   try {
     const { codigoConfirmacion } = req.body;
@@ -122,15 +118,12 @@ app.post("/api/verificar-qr", async (req, res) => {
   }
 });
 
-// Endpoint de prueba
 app.get("/api/test", (req, res) => {
   res.json({
     message: "API funcionando correctamente",
     timestamp: new Date().toISOString(),
   });
 });
-
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
